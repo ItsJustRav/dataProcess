@@ -1,8 +1,8 @@
-import os, traceback
+import os, traceback, time
 
 def listDir(folder):
         
-        f=open("fileList.txt", "a+")
+        f=open(os.path.join(curDir,"fileList.txt"), "a+")
         
         try:
                 for root, dirs, files in os.walk(folder):
@@ -16,10 +16,14 @@ def listDir(folder):
                 f.write(traceback.format_exc() + "\n")
                 print(er)
 
-        print("Complete")
+        print("Listing completed")
         return
 
 if __name__== '__main__':
-        curDir= os.getcwd()
-        print(curDir)
+
+        tik = time.time()
+        curDir= os.path.dirname(__file__)
+        print("Current Directory: ", curDir)
         listDir(curDir)
+        tok = time.time()
+        print("Time Elapsed (sec): ", tok-tik)
