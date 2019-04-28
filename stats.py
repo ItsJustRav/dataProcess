@@ -1,51 +1,77 @@
-import time, sys
+import time, sys, os, traceback, inspect
 import numpy as np
 
+def listDir(folder):
+       
+       tikList = time.time()    
+       try:
+              f=open(os.path.join(curDir,"fileList.txt"), "a+")
+              for root, dirs, files in os.walk(folder):
+                     for name in dirs:
+                            f.write(str(os.path.join(root, name)) + "\n")
+                     for name in files:
+                            f.write(str(os.path.join(root, name)) + "\n")
+       except Exception as e:
+              er = "Error Occurred: "+ str(e)
+              f.write(er + "\n")
+              f.write(traceback.format_exc() + "\n")
+              print(er)
+
+       print("Listing completed")
+       tokList = time.time()
+       timer(tikList, tokList)
+       return
 
 def csvLoad(loadName, loadDelim, loadSkip):
        
-       tikload = time.time()
+       tikLoad = time.time()
        try:
+              fileSize = round(os.path.getsize(loadName)/1048576, 2)
+              print("Loading file: ", loadName, fileSize, "MB")
               data = np.loadtxt(open(loadName, "rb"), delimiter = loadDelim, skiprows = loadSkip)
-#              print(data)
-              print("Memory used by array: ", data.nbytes/1024, " KB")
+              print("Memory used by array: ", round(data.nbytes/1048576, 3), " MB")
 
        except Exception as e:
               er = "Error Occurred: "+ str(e)
               print(er)
 
        print("Listing completed")
-       tokload = time.time()
-       print("Time elapsed for loading (sec): ", tokload-tikload)
+       tokLoad = time.time()
+       timer(tikLoad, tokLoad)
        return data
 
 
 def csvSave(saveName, saveData, saveDelim, saveHeader):
       
-       tiksave = time.time()
+       tikSave = time.time()
        try:
               np.savetxt(saveName, saveData, delimiter=saveDelim, header = saveHeader)
-
+              fileSize = round(os.path.getsize(saveName)/1048576, 3)
+              print("Saved file: ", saveName, fileSize, "MB")
        except Exception as e:
               er = "Error Occurred: "+ str(e)
               print(er)
+       tokSave = time.time()
+       timer(tikSave, tokSave)
 
-       print("Saving completed")
-       toksave = time.time()
-       print("Time elapsed for saving (sec): ", toksave-tiksave)
-
+def timer(startTime, endTime):
+       caller = inspect.stack()[1][3]
+       print("Time elapsed (sec) for : ", caller, endTime-startTime)
+       return
 
 if __name__== '__main__':
-
-        loadName = "Block1.xls"
-        loadDelim = "\t"
-        loadSkip = 17
-        print("Data file name: ", loadName)
-        a = csvLoad(loadName, loadDelim, loadSkip)
-        saveName = "test.csv"
-        saveData = a
-        saveDelim = ","
-        saveHeader = "Header"
-        csvSave(saveName, saveData, saveDelim, saveHeader)
-        print("Data saved as: ", saveName)
+       
+       curDir= os.path.dirname(__file__)
+       print("Current Directory: ", curDir)
+       listDir(curDir)
+       loadName = "F:\Test\Block1.xls"
+       loadDelim = "\t"
+       loadSkip = 17
+       a = csvLoad(loadName, loadDelim, loadSkip)
+       saveName = "test.csv"
+       saveData = a
+       saveDelim = ","
+       saveHeader = "Header"
+       csvSave(saveName, saveData, saveDelim, saveHeader)
+       print("Complete")
 
