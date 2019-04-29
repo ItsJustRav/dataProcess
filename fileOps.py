@@ -1,12 +1,12 @@
-import time, sys, os, traceback, inspect
+import time, sys, os, traceback, inspect, logging
 import numpy as np
 
-def listDir(folder):
+def listDir(path):
        
        tikList = time.time()    
        try:
-              f=open(os.path.join(curDir,"fileList.txt"), "a+")
-              for root, dirs, files in os.walk(folder):
+              f = open(os.path.join(path,"fileList.txt"), "a+")
+              for root, dirs, files in os.walk(path):
                      for name in dirs:
                             f.write(str(os.path.join(root, name)) + "\n")
                      for name in files:
@@ -21,6 +21,31 @@ def listDir(folder):
        tokList = time.time()
        timer(tikList, tokList)
        return
+       
+def fileFilter(fileType, path, ifSave):
+
+       try:
+              title = "Filtered file list by file type: %s" % fileType
+              print(title)
+              f = open(os.path.join(path,"fileList.txt"), "r")
+              filteredFiles = []
+              end = fileType + "\n"
+       
+              for files in f:
+                     if files.endswith(end):
+                            filteredFiles.append(files.rstrip())
+                                   
+              if ifSave == "yes":
+                     n = "fileteredList_%s.txt" % fileType
+                     delim = ''
+                     csvSave(n, filteredFiles, delim, title, "%s")
+
+       
+       except Exception as e:
+              er = "Error Occurred: "+ str(e)
+              print(e)
+       
+       return filteredFiles
 
 def csvLoad(loadName, loadDelim, loadSkip):
        
@@ -41,11 +66,11 @@ def csvLoad(loadName, loadDelim, loadSkip):
        return data
 
 
-def csvSave(saveName, saveData, saveDelim, saveHeader):
+def csvSave(saveName, saveData, saveDelim, saveHeader, dataFormat):
       
        tikSave = time.time()
        try:
-              np.savetxt(saveName, saveData, delimiter=saveDelim, header = saveHeader)
+              np.savetxt(saveName, saveData, delimiter=saveDelim, header = saveHeader, fmt=dataFormat)
               fileSize = round(os.path.getsize(saveName)/1048576, 3)
               print("Saved file: ", saveName, fileSize, "MB")
        except Exception as e:
@@ -61,10 +86,10 @@ def timer(startTime, endTime):
 
 if __name__== '__main__':
        
-       curDir= os.path.dirname(__file__)
-       print("Current Directory: ", curDir)
-       listDir(curDir)
-       loadName = "F:\Test\Block1.xls"
+       path= os.path.dirname(__file__)
+       print("Current Directory: ", path)
+       listDir(path)
+       loadName = "/home/rav/Test/Block1.xls"
        loadDelim = "\t"
        loadSkip = 17
        a = csvLoad(loadName, loadDelim, loadSkip)
@@ -72,6 +97,10 @@ if __name__== '__main__':
        saveData = a
        saveDelim = ","
        saveHeader = "Header"
-       csvSave(saveName, saveData, saveDelim, saveHeader)
+       dataFormat = "%.5f"
+       csvSave(saveName, saveData, saveDelim, saveHeader, dataFormat)
+       fileType = ".xls"
+       ifSave = "yes"
+       fileFilter(fileType, path, ifSave)
        print("Complete")
 
